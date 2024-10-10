@@ -1,13 +1,13 @@
 {
   "name": "foam-vscode",
-  "displayName": "Foam",
+  "displayName": "Mondothèque for Summarine",
   "description": "VS Code + Markdown + Wikilinks for your note taking and knowledge base",
   "private": true,
   "repository": {
-    "url": "https://github.com/foambubble/foam",
+    "url": "https://github.com/AntheSevenants/mondotheque",
     "type": "git"
   },
-  "homepage": "https://github.com/foambubble/foam",
+  "homepage": "https://github.com/AntheSevenants/mondotheque",
   "version": "0.26.1",
   "license": "MIT",
   "publisher": "foam",
