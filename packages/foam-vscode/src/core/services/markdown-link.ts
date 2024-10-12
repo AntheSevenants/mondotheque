@@ -32,7 +32,7 @@ export abstract class MarkdownLink {
       }
       throw new Error(`Link of type ${link.type} is not supported`);
     } catch (e) {
-      throw new Error(`Couldn't parse link ${link.rawText} - ${e}`);
+      //throw new Error(`Couldn't parse link ${link.rawText} - ${e}`);
     }
   }
 
