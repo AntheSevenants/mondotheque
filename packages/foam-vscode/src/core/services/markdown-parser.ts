@@ -325,7 +325,7 @@ const wikilinkPlugin: ParserPlugin = {
         isEmbed,
       });
     }
-    if (node.type === 'link' || node.type === 'image') {
+    if (node.type === 'link') {
       const targetUri = (node as any).url;
       const uri = note.uri.resolve(targetUri);
       if (uri.scheme !== 'file' || uri.path === note.uri.path) {
