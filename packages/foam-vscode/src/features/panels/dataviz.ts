@@ -1,4 +1,6 @@
 import * as vscode from 'vscode';
+import * as path from 'path';
+import * as fs from 'fs';
 import { Foam } from '../../core/model/foam';
 import { Logger } from '../../core/utils/log';
 import { fromVsCodeUri } from '../../utils/vsc-utils';
@@ -61,6 +63,27 @@ function updateGraph(panel: vscode.WebviewPanel, foam: Foam) {
   });
 }
 
+function getCourseName(uri: string): string | null {
+  // Start from the directory of the given URI
+  let currentDir = path.dirname(uri);
+
+  // Traverse up the directory tree until root
+  while (currentDir !== path.dirname(currentDir)) {
+      const metaPath = path.join(currentDir, 'meta.json');
+      
+      // Check if "meta.json" exists in the current directory
+      if (fs.existsSync(metaPath)) {
+          return path.basename(currentDir);
+      }
+
+      // Move up one level in the directory tree
+      currentDir = path.dirname(currentDir);
+  }
+
+  // Return null if "meta.json" wasn't found in any parent directories
+  return null;
+}
+
 function generateGraphData(foam: Foam) {
   const graph = {
     nodeInfo: {},
@@ -68,7 +91,22 @@ function generateGraphData(foam: Foam) {
   };
 
   foam.workspace.list().forEach(n => {
-    const type = n.type === 'note' ? n.properties.type ?? 'note' : n.type;
+    let type = n.type === 'note' ? n.properties.type ?? 'note' : n.type;
+    if (n.type === "note") {
+      if (n.properties.type != null && n.properties.type !== undefined) {
+        type = n.properties.type;
+      } else {
+        const courseName = getCourseName(n.uri.toFsPath());
+        if (courseName != null) {
+          type = courseName;
+        } else {
+          type = "note";
+        }
+      }
+    } else {
+      type = "note";
+    }
+
     const title = n.type === 'note' ? n.title : n.uri.getBasename();
     graph.nodeInfo[n.uri.path] = {
       id: n.uri.path,
