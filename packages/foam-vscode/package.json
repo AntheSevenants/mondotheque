@@ -8,9 +8,9 @@
     "type": "git"
   },
   "homepage": "https://github.com/AntheSevenants/mondotheque",
-  "version": "0.26.1",
+  "version": "99",
   "license": "MIT",
-  "publisher": "foam",
+  "publisher": "Anthe",
   "engines": {
     "vscode": "^1.70.0"
   },
