@@ -6,22 +6,6 @@
   "version": "0.2.0",
   "configurations": [
     {
-      "name": "Debug Jest Tests",
-      "type": "extensionHost",
-      "request": "launch",
-      "args": [
-        "${workspaceFolder}/packages/foam-vscode/.test-workspace",
-        "--disable-extensions",
-        "--disable-workspace-trust",
-        "--extensionDevelopmentPath=${workspaceFolder}/packages/foam-vscode",
-        "--extensionTestsPath=${workspaceFolder}/packages/foam-vscode/out/test/suite"
-      ],
-      "outFiles": [
-        "${workspaceFolder}/packages/foam-vscode/out/**/*.js"
-      ],
-      "preLaunchTask": "${defaultBuildTask}"
-    },
-    {
       "name": "Run VSCode Extension",
       "type": "extensionHost",
       "request": "launch",
@@ -32,22 +16,7 @@
       "outFiles": [
         "${workspaceFolder}/packages/foam-vscode/out/**/*.js"
       ],
-      "preLaunchTask": "${defaultBuildTask}"
-    },
-    {
-      "type": "node",
-      "name": "vscode-jest-tests",
-      "request": "launch",
-      "console": "integratedTerminal",
-      "internalConsoleOptions": "neverOpen",
-      "disableOptimisticBPs": true,
-      "cwd": "${workspaceFolder}/packages/foam-vscode",
-      "runtimeExecutable": "yarn",
-      "args": [
-        "jest",
-        "--runInBand",
-        "--watchAll=false"
-      ]
+      "preLaunchTask": "test: all packages"
     }
   ]
 }
