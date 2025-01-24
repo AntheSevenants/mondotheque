@@ -42,6 +42,12 @@ export const getDefaultTemplateUri = () =>
   getTemplatesDir().joinPath('new-note.md');
 
 /**
+ * The URI of the default template
+ */
+export const getMondoTemplateUri = () =>
+  getTemplatesDir().joinPath('mondo.md');
+
+/**
  * The URI of the template for daily notes
  */
 export const getDailyNoteTemplateUri = () =>

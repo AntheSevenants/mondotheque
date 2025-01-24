@@ -340,6 +340,10 @@
         "title": "Foam: Create New Note From Template"
       },
       {
+        "command": "foam-vscode.create-mondo-note",
+        "title": "Foam: Create New Mondothèque Note"
+      },
+      {
         "command": "foam-vscode.create-note-from-default-template",
         "title": "Foam: Create New Note"
       },
