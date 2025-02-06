@@ -1,5 +1,7 @@
 const CONTAINER_ID = 'graph';
 
+let blockNextNodeUpdate = false;
+
 const initGUI = () => {
   const gui = new dat.gui.GUI();
   const nodeTypeFilterFolder = gui.addFolder('Filter by type');
@@ -147,7 +149,19 @@ const Actions = {
     }),
   selectNode: (nodeId, isAppend) =>
     update(m => {
+      console.log("=== Node selection procedure ===");
+      console.log(isAppend);
+
+      if (blockNextNodeUpdate) {
+        console.log("Node update blocked");
+        blockNextNodeUpdate = false;
+        return;
+      } else {
+        console.log("Node update NOT blocked");
+      }
+
       if (!isAppend) {
+        console.log("Clearing");
         m.selectedNodes.clear();
       }
       if (nodeId != null) {
@@ -242,6 +256,7 @@ function initDataviz(channel) {
         payload: node.id,
       });
       Actions.selectNode(node.id, event.getModifierState('Shift'));
+      blockNextNodeUpdate = true;
     })
     .onBackgroundClick(event => {
       Actions.selectNode(null, event.getModifierState('Shift'));
@@ -517,7 +532,7 @@ try {
         const noteId = message.payload;
         const node = graph.graphData().nodes.find(node => node.id === noteId);
         if (node) {
-          graph.centerAt(node.x, node.y, 300).zoom(3, 300);
+          graph.centerAt(node.x, node.y, 300)/*.zoom(3, 300)*/;
           Actions.selectNode(noteId);
         }
         break;

@@ -40,15 +40,28 @@ export default async function activate(
         panel = undefined;
       });
 
-      vscode.window.onDidChangeActiveTextEditor(e => {
+      const selectNodeInGraph = note => {
+        if (isSome(note)) {
+          panel.webview.postMessage({
+            type: 'didSelectNote',
+            payload: note.uri.path,
+          });
+        }
+      };
+
+      const onSaveOrScroll = e => {
         if (e?.document?.uri?.scheme === 'file') {
           const note = foam.workspace.get(fromVsCodeUri(e.document.uri));
-          if (isSome(note)) {
-            panel.webview.postMessage({
-              type: 'didSelectNote',
-              payload: note.uri.path,
-            });
-          }
+          selectNodeInGraph(note);
+        }
+      };
+
+      vscode.window.onDidChangeActiveTextEditor(onSaveOrScroll);
+      vscode.workspace.onDidSaveTextDocument((document) => {
+        if (vscode.window.activeTextEditor?.document === document) {
+          console.log("Current file saved");
+          const note = foam.workspace.get(fromVsCodeUri(document.uri));
+          setTimeout(() => selectNodeInGraph(note), 500); // give network time to update
         }
       });
     }
