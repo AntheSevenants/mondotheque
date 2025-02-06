@@ -37,6 +37,8 @@ export default async function activate(
       const noteUpdatedListener = foam.graph.onDidUpdate(onFoamChanged);
       panel.onDidDispose(() => {
         noteUpdatedListener.dispose();
+        onChangeListener.dispose();
+        onSaveListener.dispose();
         panel = undefined;
       });
 
@@ -56,8 +58,8 @@ export default async function activate(
         }
       };
 
-      vscode.window.onDidChangeActiveTextEditor(onSaveOrScroll);
-      vscode.workspace.onDidSaveTextDocument((document) => {
+      const onChangeListener = vscode.window.onDidChangeActiveTextEditor(onSaveOrScroll);
+      const onSaveListener = vscode.workspace.onDidSaveTextDocument((document) => {
         if (vscode.window.activeTextEditor?.document === document) {
           console.log("Current file saved");
           const note = foam.workspace.get(fromVsCodeUri(document.uri));

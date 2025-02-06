@@ -1,6 +1,10 @@
 const CONTAINER_ID = 'graph';
 
 let blockNextNodeUpdate = false;
+let sourceNodeId = null;
+let targetNodeId = null;
+let pathFindingActive = false;
+let path = null;
 
 const initGUI = () => {
   const gui = new dat.gui.GUI();
@@ -107,6 +111,7 @@ function update(patch) {
   const focusLinks = new Set();
   if (model.hoverNode) {
     focusNodes.add(model.hoverNode);
+    
     const info = model.graph.nodeInfo[model.hoverNode];
     info.neighbors.forEach(neighborId => focusNodes.add(neighborId));
     info.links.forEach(link => focusLinks.add(link));
@@ -114,10 +119,22 @@ function update(patch) {
   if (model.selectedNodes) {
     model.selectedNodes.forEach(nodeId => {
       focusNodes.add(nodeId);
-      const info = model.graph.nodeInfo[nodeId];
-      info.neighbors.forEach(neighborId => focusNodes.add(neighborId));
-      info.links.forEach(link => focusLinks.add(link));
+
+      if (!pathFindingActive) {
+        const info = model.graph.nodeInfo[nodeId];
+        info.neighbors.forEach(neighborId => focusNodes.add(neighborId));
+        info.links.forEach(link => focusLinks.add(link));
+      }
     });
+
+    if (pathFindingActive) {
+      for (let i = 0; i < path.length - 1; i++) {
+        let link = { "source": path[i], "target": path[i + 1] };
+        focusLinks.add(link);
+        let reverseLink = { "target": path[i], "source": path[i + 1] };
+        focusLinks.add(reverseLink);
+      }
+    }
   }
   model.focusNodes = focusNodes;
   model.focusLinks = focusLinks;
@@ -147,10 +164,10 @@ const Actions = {
 
       updateForceGraphDataFromModel(m);
     }),
-  selectNode: (nodeId, isAppend) =>
+  selectNode: (nodeId, isAppend, isPathFinding=false) =>
     update(m => {
       console.log("=== Node selection procedure ===");
-      console.log(isAppend);
+      console.log(nodeId, isAppend, isPathFinding);
 
       if (blockNextNodeUpdate) {
         console.log("Node update blocked");
@@ -164,8 +181,33 @@ const Actions = {
         console.log("Clearing");
         m.selectedNodes.clear();
       }
+      if (isPathFinding) {
+        if (sourceNodeId == null) {
+          sourceNodeId = nodeId;
+        } else if (targetNodeId == null) {
+          targetNodeId = nodeId;
+          path = shortestPathBFS(model.data.nodes, model.data.links, sourceNodeId, targetNodeId);
+        } else if (targetNodeId != null) {
+          sourceNodeId = structuredClone(targetNodeId);
+          targetNodeId = nodeId;
+          path = shortestPathBFS(model.data.nodes, model.data.links, sourceNodeId, targetNodeId);
+        }
+
+        if (path != null) {
+          console.log(path);
+          pathFindingActive = true;
+          model.selectedNodes = new Set(path);
+          return;
+        }
+      }
       if (nodeId != null) {
         m.selectedNodes.add(nodeId);
+        sourceNodeId = nodeId
+      } else {
+        sourceNodeId = null;
+        targetNodeId = null;
+        path = null;
+        pathFindingActive = false;
       }
     }),
   highlightNode: nodeId =>
@@ -201,6 +243,36 @@ const Actions = {
     });
   },
 };
+
+const shortestPathBFS = (nodes, edges, startId, endId) => {
+  let adjacencyList = new Map();
+
+  // Build adjacency list (map node ID → neighbors)
+  nodes.forEach(node => adjacencyList.set(node.id, []));
+  edges.forEach(({ source, target }) => {
+      adjacencyList.get(source.id).push(target.id);
+      adjacencyList.get(target.id).push(source.id); // Assume undirected graph
+  });
+
+  let queue = [[startId]]; // Each element in queue is a path array
+  let visited = new Set([startId]);
+
+  while (queue.length) {
+      let path = queue.shift();
+      let node = path[path.length - 1];
+
+      if (node === endId) return path; // Return the first found shortest path
+
+      for (let neighbor of adjacencyList.get(node)) {
+          if (!visited.has(neighbor)) {
+              visited.add(neighbor);
+              queue.push([...path, neighbor]);
+          }
+      }
+  }
+
+  return null; // No path found
+}
 
 function initDataviz(channel) {
   const elem = document.getElementById(CONTAINER_ID);
@@ -255,7 +327,7 @@ function initDataviz(channel) {
         type: 'webviewDidSelectNode',
         payload: node.id,
       });
-      Actions.selectNode(node.id, event.getModifierState('Shift'));
+      Actions.selectNode(node.id, event.getModifierState('Shift'), event.getModifierState('Control'));
       blockNextNodeUpdate = true;
     })
     .onBackgroundClick(event => {
